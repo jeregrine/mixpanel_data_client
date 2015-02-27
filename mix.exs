@@ -5,6 +5,15 @@ defmodule MixpanelDataClient.Mixfile do
     [app: :mixpanel_data_client,
      version: "0.0.1",
      elixir: "~> 1.0",
+     description: "Client library for interacting with the Mixpanel Data API.",
+     package: [
+       contributors: ["Jason Stiebs"],
+       links: %{ "Github" => "https://github.com/jeregrine/mixpanel_data_client", "Mixpanel Data API" =>"https://mixpanel.com/docs/api-documentation/data-export-api"},
+       licenses: ["MIT"]
+     ],
+     name: "MixpanelDataClient",
+     source_url: "https://github.com/jeregrine/mixpanel_data_client",
+     homepage_url: "https://github.com/jeregrine/mixpanel_data_client",
      deps: deps]
   end
 
@@ -12,7 +21,7 @@ defmodule MixpanelDataClient.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :httpoison]]
+    [applications: [:httpoison]]
   end
 
   # Dependencies can be Hex packages:
@@ -27,7 +36,9 @@ defmodule MixpanelDataClient.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.6"},
-      {:poison,    "~> 1.3.1"}
+      {:poison,    "~> 1.3.1"},
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.7", only: :dev}
     ]
   end
 end
