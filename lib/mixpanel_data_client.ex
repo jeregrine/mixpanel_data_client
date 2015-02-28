@@ -32,25 +32,36 @@ defmodule MixpanelDataClient do
     { :error, Poison.decode!(body) }
   end
 
-  @nodoc
   def mixpanel_uri(endpoint, query, key, secret, expire) do
     signed_params = signature(query, key, secret, expire)
     @base_url <> endpoint <> "/?" <> URI.encode_query(signed_params)
   end
 
-  @nodoc
   def signature(query_params, key, secret, expire) do
     params = Dict.merge(query_params, %{"api_key" => key, "expire" => expire})
-    result = params
-      |> Enum.sort() 
-      |> URI.encode_query() 
+    result = Enum.sort(params) |> Enum.map_join("", &encode_pair/1)
+
     result = result <> secret
-    Dict.merge(params, %{"sig" => :erlang.md5(result)})
+    Dict.put(params, "sig", md5(result))
   end
 
-  @nodoc
   def expire(base \\ epoch(), future \\ 60), do: base + future
   defp epoch() do
      :calendar.datetime_to_gregorian_seconds(:calendar.now_to_universal_time( :erlang.now()))-719528*24*3600
+  end
+
+  def md5(s) do 
+    :crypto.hash(:md5, s)
+    |> Base.encode16(case: :lower)
+  end
+
+  def encode_pair({key, val}) when is_integer(val) do
+    encode_pair({key, Integer.to_string(val)})
+  end
+  def encode_pair({key, val}) when is_atom(key) do
+    encode_pair({Atom.to_string(key), val})
+  end
+  def encode_pair({key, val}) do
+    key <> "=" <> val
   end
 end

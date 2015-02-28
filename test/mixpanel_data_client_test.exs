@@ -22,9 +22,9 @@ defmodule MixpanelDataClientTest do
 
     result = result_params
               |> Enum.sort() 
-              |> URI.encode_query() 
+              |> Enum.map_join("", &encode_pair/1)
     result = result <> secret
-    signature = :erlang.md5(result)
+    signature = md5(result)
     
     assert signature(query_params, key, secret, expire) == Dict.merge(result_params, %{"sig" => signature})
   end
