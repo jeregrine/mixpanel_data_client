@@ -20,7 +20,7 @@ defmodule MixpanelDataClient do
       => %{"data" => %{...}}
     ```
   """
-  @spec fetch(String.t, map(), {String.t, String.t}) :: {:error, map()} | {:ok, map()}
+  @spec fetch(String.t, map(), {String.t, String.t}) :: {:error, map()} | {:ok, map()} | {:ok, list()}
   def fetch("export" = endpoint, params, {key, secret}) do
     mixpanel_uri(endpoint, params, key, secret, expire())
     |> HTTPoison.get
