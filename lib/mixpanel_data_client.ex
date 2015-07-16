@@ -1,6 +1,7 @@
 defmodule MixpanelDataClient do
   use HTTPoison.Base
   @base_url "http://mixpanel.com/api/2.0/"
+  @export_url "https://data.mixpanel.com/api/2.0/export"
 
   @doc """
     Fetch data from the mixpanel data api.
@@ -20,18 +21,34 @@ defmodule MixpanelDataClient do
     ```
   """
   @spec fetch(String.t, map(), {String.t, String.t}) :: {:error, map()} | {:ok, map()}
+  def fetch("export" = endpoint, params, {key, secret}) do
+    mixpanel_uri(endpoint, params, key, secret, expire())
+    |> HTTPoison.get
+    |> handle_response(:jsonl)
+  end
   def fetch(endpoint, params, {key, secret}) do
     HTTPoison.get(mixpanel_uri(endpoint, params, key, secret, expire()))
     |> handle_response
   end
 
-  defp handle_response({:ok, %HTTPoison.Response{body: body, status_code: 200}}) do
+  defp handle_response(response, type \\ :json)
+  defp handle_response({:ok, %HTTPoison.Response{body: body, status_code: 200}}, :jsonl) do
+    res = body
+    |> String.splint("\n")
+    |> Enum.map(fn(item) -> Poison.decode! item end)
+    { :ok, res }
+  end
+  defp handle_response({:ok, %HTTPoison.Response{body: body, status_code: 200}}, :json) do
     { :ok, Poison.decode!(body) }
   end
-  defp handle_response({:ok, %HTTPoison.Response{body: body}}) do
+  defp handle_response({:ok, %HTTPoison.Response{body: body}}, _type) do
     { :error, Poison.decode!(body) }
   end
 
+  def mixpanel_uri("export" = _endpoint, query, key, secret, expire) do
+    signed_params = signature(query, key, secret, expire)
+    @export_url <> "/?" <> URI.encode_query(signed_params)
+  end
   def mixpanel_uri(endpoint, query, key, secret, expire) do
     signed_params = signature(query, key, secret, expire)
     @base_url <> endpoint <> "/?" <> URI.encode_query(signed_params)
