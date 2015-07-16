@@ -1,7 +1,7 @@
 defmodule MixpanelDataClient do
   use HTTPoison.Base
   @base_url "http://mixpanel.com/api/2.0/"
-  @export_url "https://data.mixpanel.com/api/2.0/export"
+  @export_url "http://data.mixpanel.com/api/2.0/export"
 
   @doc """
     Fetch data from the mixpanel data api.
@@ -33,10 +33,15 @@ defmodule MixpanelDataClient do
 
   defp handle_response(response, type \\ :json)
   defp handle_response({:ok, %HTTPoison.Response{body: body, status_code: 200}}, :jsonl) do
-    res = body
-    |> String.split("\n")
-    |> Enum.map(fn(item) -> Poison.decode! item end)
-    { :ok, res }
+    case body == "" do
+      true -> { :ok, []}
+      false -> 
+        res = body
+          |> String.strip
+          |> String.split("\n")
+          |> Enum.map(fn(item) -> Poison.decode! item end)
+        {:ok, res}
+    end
   end
   defp handle_response({:ok, %HTTPoison.Response{body: body, status_code: 200}}, :json) do
     { :ok, Poison.decode!(body) }
