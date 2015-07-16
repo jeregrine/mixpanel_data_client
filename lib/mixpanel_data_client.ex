@@ -34,7 +34,7 @@ defmodule MixpanelDataClient do
   defp handle_response(response, type \\ :json)
   defp handle_response({:ok, %HTTPoison.Response{body: body, status_code: 200}}, :jsonl) do
     res = body
-    |> String.splint("\n")
+    |> String.split("\n")
     |> Enum.map(fn(item) -> Poison.decode! item end)
     { :ok, res }
   end
