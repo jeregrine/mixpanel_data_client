@@ -1,6 +1,6 @@
 defmodule MixpanelDataClient do
   use HTTPoison.Base
-  @base_url "http://mixpanel.com/api/2.0/"
+  @base_url "https://mixpanel.com/api/2.0/"
   @export_url "http://data.mixpanel.com/api/2.0/export"
 
   @doc """
